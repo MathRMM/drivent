@@ -25,24 +25,8 @@ async function getAddressFromCEP(cep: string): Promise<CEPAddress> {
 }
 
 type CEPAddress = {
-  bairro: string,
-  logradouro: string,
-  complemento: string,
   cidade: string,
-  uf: string
-}
-
-/* type ViaCEPAddressComplete = {
-  cep: string,
-  ibge: string,
-  gia: string,
-  ddd: string,
-  siafi: string,
-} & ViaCEPAddress
-
-function getViaCepAddress(data: ViaCEPAddressComplete): ViaCEPAddress{
-  return
-} */
+} & Omit<ViaCEPAddress, "localidade">
 
 async function getOneWithAddressByUserId(userId: number): Promise<GetOneWithAddressByUserIdResult> {
   const enrollmentWithAddress = await enrollmentRepository.findWithAddressByUserId(userId);
@@ -71,15 +55,8 @@ type GetAddressResult = Omit<Address, "createdAt" | "updatedAt" | "enrollmentId"
 async function createOrUpdateEnrollmentWithAddress(params: CreateOrUpdateEnrollmentWithAddress) {
   const enrollment = exclude(params, "address");
   const address = getAddressForUpsert(params.address);
-  //TODO - Verificar se o CEP é válido
   const cepValidation = await getAddressFromCEP(address.cep);
-  if(!cepValidation.bairro) throw notFoundError;
-
-  /* try {
-    const cepValidation = await getAddressFromCEP(address.cep);
-  } catch (error) {
-    console.log("deu erro", error);
-  } */
+  if(!cepValidation.uf) throw notFoundError;
 
   const newEnrollment = await enrollmentRepository.upsert(params.userId, enrollment, exclude(enrollment, "userId"));
 
