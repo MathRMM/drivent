@@ -30,6 +30,7 @@ export async function postCreateOrUpdateEnrollment(req: AuthenticatedRequest, re
 
 export async function getAddressFromCEP(req: AuthenticatedRequest, res: Response) {
   const { cep } = req.query as Record<string, string>;
+  if(!cep) return res.send(httpStatus.BAD_REQUEST);
 
   try {
     const address = await enrollmentsService.getAddressFromCEP(cep);
