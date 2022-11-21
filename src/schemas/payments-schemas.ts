@@ -1,5 +1,4 @@
 import Joi from "joi";
-import { PaymentBody } from "@/protocols";
 
 export const paymentsBodySchema = Joi.object<PaymentBody>({
   ticketId: Joi.number().required(),
@@ -11,3 +10,14 @@ export const paymentsBodySchema = Joi.object<PaymentBody>({
     cvv: Joi.number().required()
   })
 });
+
+export type PaymentBody = {
+  ticketId: number;
+  cardData: {
+    issuer: string;
+    number: number;
+    name: string;
+    expirationDate: Date;
+    cvv: number;
+  };
+};

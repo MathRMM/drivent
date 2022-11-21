@@ -8,6 +8,7 @@ async function findTicketWithPaymentByTicketId(ticketId: number) {
     },
     include: {
       Payment: true,
+      Enrollment: true
     },
   });
 }

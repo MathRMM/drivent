@@ -28,19 +28,3 @@ export type RequestError = {
   message: string;
 };
 
-export type UpsertTickets = {
-  ticketTypeId?: number;
-  enrollmentId?: number;
-  ticketId?: number;
-};
-
-export type PaymentBody = {
-  ticketId: number;
-  cardData: {
-    issuer: string;
-    number: number;
-    name: string;
-    expirationDate: Date;
-    cvv: number;
-  };
-};

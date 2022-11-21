@@ -1,5 +1,3 @@
-import { request } from "@/utils/request";
-import { AddressEnrollment } from "@/protocols";
 import { getAddress } from "@/utils/cep-service";
 import { notFoundError } from "@/errors";
 import addressRepository, { CreateAddressParams } from "@/repositories/address-repository";
@@ -9,18 +7,17 @@ import { Address, Enrollment } from "@prisma/client";
 import { ViaCEPAddress } from "@/protocols";
 
 async function getAddressFromCEP(cep: string): Promise<CEPAddress> {
-  const result = await request.get(`https://viacep.com.br/ws/${cep}/json/`);
-  if (!result.data) {
+  const result = await getAddress(cep);
+  if (!result) {
     throw notFoundError();
   }
 
-  const data = result.data as ViaCEPAddress;
   const address: CEPAddress = {
-    bairro: data.bairro,
-    logradouro: data.logradouro,
-    complemento: data.complemento,
-    cidade: data.localidade,
-    uf: data.uf
+    bairro: result.bairro,
+    logradouro: result.logradouro,
+    complemento: result.complemento,
+    cidade: result.localidade,
+    uf: result.uf
   };
 
   return address;
