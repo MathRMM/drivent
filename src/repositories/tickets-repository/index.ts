@@ -1,32 +1,72 @@
 import { prisma } from "@/config";
-import { TicketType } from "@prisma/client";
+import { UpsertTickets } from "@/protocols";
+import { TicketStatus } from "@prisma/client";
 
-export async function findTicketTypesByUserId(userId: number): Promise<TicketType[]> {
-  return await prisma.ticketType.findMany({
+async function findManyTypes() {
+  return await prisma.ticketType.findMany();
+}
+
+async function findTicketByUserId(userId: number, ticketId: number) {
+  return await prisma.ticket.findFirst({
     where: {
-      Ticket: {
-        every: {
+      OR: [
+        {
           Enrollment: {
             userId,
-          }
+          },
+        },
+        {
+          id: ticketId
         }
-      }
-    }
+      ],
+    },
+    include: {
+      TicketType: true,
+    },
   });
 }
 
-export async function findTicketTypesById(id: number) {
-  return await prisma.ticketType.findUnique({
+async function findTicketByTicketId(ticketId: number) {
+  return await prisma.ticket.findFirst({
     where: {
-      id,
-    }
+      id: ticketId,
+    },
+    include: {
+      TicketType: true,
+    },
   });
 }
 
-export async function findTicketByUserId(userId: number) {
-  return await prisma.enrollment.findUnique({
+async function findTicketByTicketIdAndUserId(ticketId: number, userId: number) {
+  return prisma.ticket.findFirst({
     where: {
-      userId,
-    }
-  }).Ticket();
+      AND: [{ id: ticketId }, { Enrollment: { userId } }],
+    },
+  });
 }
+
+async function upsertTickets(obj: UpsertTickets) {
+  return await prisma.ticket.upsert({
+    where: {
+      id: obj.ticketId || 0,
+    },
+    update: {
+      status: TicketStatus.PAID,
+    },
+    create: {
+      status: TicketStatus.RESERVED,
+      ticketTypeId: obj.ticketTypeId,
+      enrollmentId: obj.enrollmentId,
+    },
+  });
+}
+
+const ticketsRepository = {
+  findTicketByUserId,
+  findManyTypes,
+  upsertTickets,
+  findTicketByTicketIdAndUserId,
+  findTicketByTicketId,
+};
+
+export default ticketsRepository;

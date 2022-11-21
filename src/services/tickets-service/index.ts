@@ -1,21 +1,36 @@
-import { findTicketTypesByUserId, findTicketByUserId, findTicketTypesById } from "@/repositories/tickets-repository";
-import { notFoundError } from "@/errors";
+import ticketsRepository from "@/repositories/tickets-repository";
+import enrollmentRepository from "@/repositories/enrollment-repository";
+import { notFoundError, unauthorizedError } from "@/errors";
 import { Ticket, TicketType } from "@prisma/client";
 
-export async function getTicketTypeByUserId(userId: number) {
-  const ticketType = await findTicketTypesByUserId(userId);
+async function getTicketType(): Promise<TicketType[]> {
+  const ticketType = await ticketsRepository.findManyTypes();
   return ticketType;
 }
 
-export async function getTicketByUserId(userId: number): Promise<TicketWithTypes> {
-  const [ticket] = await findTicketByUserId(userId);
+async function getTicketByUserId(userId: number): Promise<TicketWithTypes> {
+  const enrollment = await enrollmentRepository.findWithAddressByUserId(userId);
+  if (!enrollment) throw notFoundError();
+
+  const ticket = await ticketsRepository.findTicketByUserId(userId, 0);
   if (!ticket) throw notFoundError();
-  const ticketType = await findTicketTypesById(ticket.ticketTypeId);
-  if (!ticketType) throw notFoundError();
-  return {
-    ...ticket,
-    ...(!!ticketType && { TicketType: ticketType })
-  };
+
+  return ticket;
 }
 
-type TicketWithTypes = Ticket & { TicketType: TicketType }
+type TicketWithTypes = Ticket & { TicketType: TicketType };
+
+async function createAndReturnReserveTicket(ticketTypeId: number, userId: number) {
+  const enrollment = await enrollmentRepository.findWithAddressByUserId(userId);
+  if (!enrollment) throw notFoundError();
+  await ticketsRepository.upsertTickets({ ticketTypeId: ticketTypeId, enrollmentId: enrollment.id });
+  return await ticketsRepository.findTicketByUserId(userId, 0);
+}
+
+const ticketsService = {
+  getTicketType,
+  getTicketByUserId,
+  createAndReturnReserveTicket,
+};
+
+export default ticketsService;
