@@ -1,6 +1,6 @@
 import ticketsRepository from "@/repositories/tickets-repository";
 import enrollmentRepository from "@/repositories/enrollment-repository";
-import { notFoundError, unauthorizedError } from "@/errors";
+import { notFoundError } from "@/errors";
 import { Ticket, TicketType } from "@prisma/client";
 
 async function getTicketType(): Promise<TicketType[]> {
