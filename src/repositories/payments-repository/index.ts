@@ -8,8 +8,27 @@ async function findTicketWithPaymentByTicketId(ticketId: number) {
     },
     include: {
       Payment: true,
-      Enrollment: true
+      Enrollment: true,
     },
+  });
+}
+
+async function findPaymentWithTicketTypeByUserId(userId: number) {
+  return await prisma.payment.findFirst({
+    where: {
+      Ticket: {
+        Enrollment: {
+          userId,
+        },
+      },
+    },
+    include: {
+      Ticket: {
+        include: {
+          TicketType: true
+        }
+      }
+    }
   });
 }
 
@@ -28,6 +47,7 @@ export type SavePayment = Omit<Payment, "createdAt" | "updatedAt" | "id">;
 
 const paymentsRepository = {
   findTicketWithPaymentByTicketId,
+  findPaymentWithTicketTypeByUserId,
   createPayment,
 };
 
