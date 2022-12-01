@@ -131,7 +131,7 @@ model Room {
 
 model Booking {
   id        Int      @id @default(autoincrement())
-  User      User     @relation(fields: [userId], references: [id])
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    Int
   Room      Room     @relation(fields: [roomId], references: [id])
   roomId    Int
