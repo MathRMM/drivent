@@ -11,11 +11,11 @@ export async function createHotel(): Promise<Hotel> {
   });
 }
 
-export async function createRoom(hotel: Hotel): Promise<Room> {
+export async function createRoom(hotel: Hotel, capacity?: number): Promise<Room & {Hotel: Hotel}> {
   return prisma.room.create({
     data: {
       name: faker.lorem.sentence(),
-      capacity: faker.datatype.number({ min: 1, max: 6 }),
+      capacity: capacity || 1,
       hotelId: hotel.id,
     },
     include: {
